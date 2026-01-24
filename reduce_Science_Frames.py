@@ -18,6 +18,8 @@ from astropy.nddata import CCDData
 from astropy.visualization import hist
 import matplotlib.pyplot as plt
 import numpy as np
+import warnings
+from astropy.wcs import FITSFixedWarning
 import ccdproc
 
 #Define path to RAW data
@@ -66,7 +68,8 @@ for light, file_name in files.ccds(imagetyp = science_imagetyp,
         
         #Save reduced science image
         reduced.write(calibrated_path / file_name, overwrite = True)
-        
+
+        warnings.simplefilter('ignore', category = FITSFixedWarning) #ignore warnings
 
         print(f"Reduced", {file_name},"with master flat for filter", {science_filter})
     else:
@@ -75,10 +78,13 @@ for light, file_name in files.ccds(imagetyp = science_imagetyp,
 ExampleDir = Path(r"C:\Users\louis\Desktop\20250626\reduced\20250626.0122.fits")
 hdulist = fits.open(ExampleDir)
 image_data = apply_stretch(hdulist[0].data)
+min_val = np.amin(image_data)
+max_val = np.amax(image_data)
+inverted_data = max_val + min_val - image_data
 hdulist.close()
-plt.imshow(image_data, cmap='gray', origin='lower')
+plt.imshow(inverted_data, cmap='gray', origin='lower')
 plt.colorbar()
-plt.title("Example Image: 20250626.0122")
+plt.title("Inverted Image: 20250626.0122")
 plt.xlabel("X-axis (pixels)")
 plt.ylabel("Y-axis (pixels)")
 plt.show()                    
